@@ -137,6 +137,8 @@ describe('', function() {
 
       request(options, function(error, res, body) {
         var queryString = 'SELECT * FROM users where username = "Samantha"';
+        console.log('res---------->', res.body);
+        console.log('body---------->', body);
         db.query(queryString, function(err, rows) {
           if (err) { done(err); }
           var user = rows[0];

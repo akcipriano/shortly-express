@@ -5,6 +5,7 @@ const partials = require('express-partials');
 const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const models = require('./models');
+const Model = require('./models/model');
 
 const app = express();
 
@@ -17,62 +18,106 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 
 
-app.get('/', 
-(req, res) => {
-  res.render('index');
-});
+app.get('/',
+  (req, res) => {
+    res.render('index');
+  });
 
-app.get('/create', 
-(req, res) => {
-  res.render('index');
-});
+app.get('/create',
+  (req, res) => {
+    res.render('index');
+  });
 
-app.get('/links', 
-(req, res, next) => {
-  models.Links.getAll()
-    .then(links => {
-      res.status(200).send(links);
-    })
-    .error(error => {
-      res.status(500).send(error);
-    });
-});
-
-app.post('/links', 
-(req, res, next) => {
-  var url = req.body.url;
-  if (!models.Links.isValidUrl(url)) {
-    // send back a 404 if link is not valid
-    return res.sendStatus(404);
-  }
-
-  return models.Links.get({ url })
-    .then(link => {
-      if (link) {
-        throw link;
-      }
-      return models.Links.getUrlTitle(url);
-    })
-    .then(title => {
-      return models.Links.create({
-        url: url,
-        title: title,
-        baseUrl: req.headers.origin
+app.get('/links',
+  (req, res, next) => {
+    models.Links.getAll()
+      .then(links => {
+        res.status(200).send(links);
+      })
+      .error(error => {
+        res.status(500).send(error);
       });
-    })
-    .then(results => {
-      return models.Links.get({ id: results.insertId });
-    })
-    .then(link => {
-      throw link;
-    })
-    .error(error => {
-      res.status(500).send(error);
-    })
-    .catch(link => {
-      res.status(200).send(link);
-    });
-});
+  });
+
+app.get('/login',
+  (req, res) => {
+    res.render('login');
+  });
+
+app.get('/signup',
+  (req, res) => {
+    res.render('signup');
+  });
+
+app.post('/links',
+  (req, res, next) => {
+    var url = req.body.url;
+    if (!models.Links.isValidUrl(url)) {
+      // send back a 404 if link is not valid
+      return res.sendStatus(404);
+    }
+
+    return models.Links.get({ url })
+      .then(link => {
+        if (link) {
+          throw link;
+        }
+        return models.Links.getUrlTitle(url);
+      })
+      .then(title => {
+        return models.Links.create({
+          url: url,
+          title: title,
+          baseUrl: req.headers.origin
+        });
+      })
+      .then(results => {
+        return models.Links.get({ id: results.insertId });
+      })
+      .then(link => {
+        throw link;
+      })
+      .error(error => {
+        res.status(500).send(error);
+      })
+      .catch(link => {
+        res.status(200).send(link);
+      });
+  });
+
+app.post('/signup',
+  (req, res, next) => {
+    // var options = {
+    //   username: 'user',
+    //   password: 'pw'
+    // };
+
+    // var newSignup = new Model ('users');
+    // console.log(newSignup);
+    var newModel = new Model('users');
+    return models.Users.create('Bob', 'password')
+      .then (newUser => {
+        console.log('newUser------>', newUser);
+        return newModel.create(newUser);
+      });
+
+    // next();
+
+  });
+
+// /**
+//  * Creates a new record in the table.
+//  * @param {Object} options - An object with key/value pairs, where the keys should match
+//  * the column names and the values should be of the correct type for that table. See model
+//  * class definition for additional information about the schema.
+//  * @returns {Promise<Object>} A promise that is fulfilled with an object
+//  * containing the results of the query or is rejected with the the error that occurred
+//  * during the query.
+//  */
+// create(options) {
+//   let queryString = `INSERT INTO ${this.tablename} SET ?`;
+//   return executeQuery(queryString, options);
+// }
 
 /************************************************************/
 // Write your authentication routes here
