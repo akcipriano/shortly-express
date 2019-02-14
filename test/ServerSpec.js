@@ -13,7 +13,7 @@ var port = 4568;
 // Remove the 'x' from beforeEach block when working on
 // authentication tests.
 /************************************************************/
-var xbeforeEach = function() {};
+var beforeEach = function() {};
 /************************************************************/
 
 
@@ -137,8 +137,6 @@ describe('', function() {
 
       request(options, function(error, res, body) {
         var queryString = 'SELECT * FROM users where username = "Samantha"';
-        console.log('res---------->', res.body);
-        console.log('body---------->', body);
         db.query(queryString, function(err, rows) {
           if (err) { done(err); }
           var user = rows[0];
@@ -186,6 +184,7 @@ describe('', function() {
         if (error) { return done(error); }
         request(options, function(err, response, resBody) {
           if (err) { return done(err); }
+          console.log('response.headers.location', response.headers.location);
           expect(response.headers.location).to.equal('/signup');
           done();
         });

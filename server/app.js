@@ -5,7 +5,7 @@ const partials = require('express-partials');
 const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const models = require('./models');
-const Model = require('./models/model');
+const db = require('./db');
 
 const app = express();
 
@@ -87,37 +87,34 @@ app.post('/links',
 
 app.post('/signup',
   (req, res, next) => {
-    // var options = {
-    //   username: 'user',
-    //   password: 'pw'
-    // };
+    var newUsername = req.body.username;
+    var newPassword = req.body.password;
+    var queryStr = `SELECT username FROM users WHERE username = "${newUsername}"`;
+    var queryResults = [];
 
-    // var newSignup = new Model ('users');
-    // console.log(newSignup);
-    var newModel = new Model('users');
-    return models.Users.create('Bob', 'password')
-      .then (newUser => {
-        console.log('newUser------>', newUser);
-        return newModel.create(newUser);
-      });
+    db.query(queryStr, queryResults, (err, results) => {
+      if (err) {
+        throw (err);
+      }
 
-    // next();
+      if (results.length === 0) {
+        return models.Users.create({ username: newUsername, password: newPassword })
+          .then(newUser => {
+            //THIS COULD BE SOMETHING ELSE
+            res.render('login');
+          })
+          .catch(err => {
+            //STATUS CODE COULD BE CHANGED
+            res.status(400).send(err);
+          });
+      } else {
+        res.set('location', '/signup');
+        res.render('signup');
 
+      }
+    });
   });
 
-// /**
-//  * Creates a new record in the table.
-//  * @param {Object} options - An object with key/value pairs, where the keys should match
-//  * the column names and the values should be of the correct type for that table. See model
-//  * class definition for additional information about the schema.
-//  * @returns {Promise<Object>} A promise that is fulfilled with an object
-//  * containing the results of the query or is rejected with the the error that occurred
-//  * during the query.
-//  */
-// create(options) {
-//   let queryString = `INSERT INTO ${this.tablename} SET ?`;
-//   return executeQuery(queryString, options);
-// }
 
 /************************************************************/
 // Write your authentication routes here
