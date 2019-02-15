@@ -13,7 +13,7 @@ var port = 4568;
 // Remove the 'x' from beforeEach block when working on
 // authentication tests.
 /************************************************************/
-var beforeEach = function() {};
+var xbeforeEach = function() {};
 /************************************************************/
 
 
@@ -184,7 +184,6 @@ describe('', function() {
         if (error) { return done(error); }
         request(options, function(err, response, resBody) {
           if (err) { return done(err); }
-          console.log('response.headers.location', response.headers.location);
           expect(response.headers.location).to.equal('/signup');
           done();
         });
@@ -352,7 +351,7 @@ describe('', function() {
           expect(cookies).to.be.an('object');
           expect(cookies).to.eql({});
         });
-
+        // const parseCookies = (req, res, next) => {
         cookieParser(requestWithCookies, response, function() {
           var cookies = requestWithCookies.cookies;
           expect(cookies).to.be.an('object');

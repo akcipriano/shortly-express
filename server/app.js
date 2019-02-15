@@ -101,7 +101,8 @@ app.post('/signup',
         return models.Users.create({ username: newUsername, password: newPassword })
           .then(newUser => {
             //THIS COULD BE SOMETHING ELSE
-            res.render('login');
+            res.set('location', '/');
+            res.render('index');
           })
           .catch(err => {
             //STATUS CODE COULD BE CHANGED
@@ -115,6 +116,43 @@ app.post('/signup',
     });
   });
 
+app.post('/login',
+  (req, res, next) => {
+    var enteredUsername = req.body.username;
+    var enteredPassword = req.body.password;
+    var queryStr = `SELECT salt, password FROM users WHERE username = "${enteredUsername}"`;
+
+    db.query(queryStr, (err, results) => {
+      if (err) {
+        throw (err);
+      }
+      if (results.length === 0) {
+        res.set('location', '/login');
+        res.render('login');
+      } else {
+        var salt = results[0].salt;
+        var hashedPassword = results[0].password;
+        if (utils.compareHash(enteredPassword, hashedPassword, salt)) {
+          res.set('location', '/');
+          res.render('index');
+        } else {
+          res.set('location', '/login');
+          res.render('login');
+        }
+      }
+
+    });
+    // declare query strin
+    // query db - select (salt, password) from users where username = enteredUsername
+    // invoke compuare hash (enteredPassword, password from users, salt from users)
+    // if (true) {
+    //res.set('location', '/')
+    // res.redner('/');
+    // else
+    // res.render('/login')
+  }
+
+);
 
 /************************************************************/
 // Write your authentication routes here
